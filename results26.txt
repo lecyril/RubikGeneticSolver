@@ -1,0 +1,6 @@
+U  R  U' R2 F  D  B  F' L  B' U' B  F2 U2 F2 R' F  B' R2 L' U' L2 F2 R' D2 R  B' D2 R2 D  //Scramble
+y
+U2 F' R' L  D2 R' L2 //2x2x3
+U  R  U' R' //Get into 2-GEN
+U  F2 U2 F  U  F' U' F  U  F2 U' F' U' F2 U2 //2-GEN solve
+total moves # : 26
