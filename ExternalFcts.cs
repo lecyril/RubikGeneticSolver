@@ -21,7 +21,14 @@ namespace Rubik
 
         public static int RandomInt(int exclusive) => _rng.Next(exclusive);
 
-        // Init cube: returns array[54] with blocks of 9 having same value 0..5
+        /// <summary>
+        /// Initializes a cube in the solved state and returns an array representing the faces.Init cube: returns array[54] with blocks of 9 having same value 0..5
+        /// </summary>
+        /// <remarks>Each value from 0 to 5 represents a distinct face of the cube. The returned array can
+        /// be used to represent the state of a standard 3󫢫 cube, with each face initialized to a uniform color or
+        /// identifier.</remarks>
+        /// <returns>An array of 54 integers where each group of 9 consecutive elements corresponds to a face of the cube, and
+        /// all elements in a group have the same value from 0 to 5.</returns>
         public static int[] InitCube()
         {
             var res = new int[54];
@@ -31,7 +38,17 @@ namespace Rubik
             return res;
         }
 
-        // ToNotation: converts move numbers to a string array like Fortran ToString
+        /// <summary>
+        /// Converts a sequence of move numbers into an array of strings representing each move in standard notation.
+        /// </summary>
+        /// <remarks>The face characters used are 'F', 'U', 'R', 'B', 'D', and 'L'. The modifier is a
+        /// space for a single turn, '2' for a double turn, and '\'' for a counterclockwise turn. The output array
+        /// length is three times the number of moves in the input sequence.</remarks>
+        /// <param name="sequence">An array of integers where each element represents a move. Each move should correspond to a face and
+        /// modifier according to the notation scheme.</param>
+        /// <returns>An array of strings containing the notation for each move. Each move is represented by three consecutive
+        /// string entries: the face character, the move modifier (a space, '2', or '\''), and a space. Returns an empty
+        /// array if <paramref name="sequence"/> is null.</returns>
         // Each move => three entries: face char, modifier (' ', '2' or '\''), ' '
         public static string[] ToNotation(int[] sequence)
         {
@@ -60,7 +77,17 @@ namespace Rubik
             return outArr;
         }
 
-        // ToNumbers: parses string like "F", "F2", "F'" (case-insensitive)
+        /// <summary>
+        /// Parses a move notation string and returns its corresponding numeric code.ToNumbers: parses string like "F", "F2", "F'" (case-insensitive)
+        /// </summary>
+        /// <remarks>The method supports standard face notations ('F', 'U', 'R', 'B', 'D', 'L') with
+        /// optional modifiers: '2' for a double turn and '\'' for a counterclockwise turn. For example, "F" returns 0,
+        /// "F2" returns 6, and "F'" returns 12.</remarks>
+        /// <param name="s">The move notation to parse. The string can be in the form of a single face letter (e.g., "F"), optionally
+        /// followed by a modifier such as '2' or a prime symbol ('). The comparison is case-insensitive. Leading and
+        /// trailing whitespace are ignored.</param>
+        /// <returns>An integer representing the numeric code for the specified move notation. Returns 0 if the input is null,
+        /// empty, or unrecognized.</returns>
         public static int ToNumbers(string s)
         {
             if (string.IsNullOrEmpty(s)) return 0;
@@ -84,7 +111,15 @@ namespace Rubik
             return val;
         }
 
-        // DoSequence: apply a sequence of moves to a cube (both zero-based)
+        /// <summary>
+        /// Applies a sequence of moves to the specified cube and returns the resulting cube state.
+        /// </summary>
+        /// <param name="cube">An array representing the initial state of the cube. Cannot be null.</param>
+        /// <param name="moveSequence">An array of zero-based move indices to apply to the cube. If null or empty, the original cube state is
+        /// returned.</param>
+        /// <returns>An array representing the cube state after all moves in the sequence have been applied. If no moves are
+        /// specified, a copy of the original cube is returned.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cube"/> is null.</exception>
         public static int[] DoSequence(int[] cube, int[] moveSequence)
         {
             if (cube == null) throw new ArgumentNullException(nameof(cube));
@@ -97,7 +132,19 @@ namespace Rubik
             return cur;
         }
 
-        // DoMove: applies a single move (including repetitions for 2/3 turns)
+        
+        /// <summary>
+        /// Applies a single move to the given cube state, including repetitions for double, triple, or full turns, and
+        /// returns the resulting state.
+        /// </summary>
+        /// <remarks>The method does not modify the input array; instead, it returns a new array with the
+        /// updated state. The interpretation of the move parameter depends on the cube's move encoding, where higher
+        /// values indicate multiple turns of the same face.</remarks>
+        /// <param name="cubeState">An array representing the current state of the cube. The array must not be null and should follow the
+        /// expected cube state format.</param>
+        /// <param name="move">An integer specifying the move to apply. The value determines the face to turn and the number of repetitions
+        /// (e.g., single, double, triple, or full turn).</param>
+        /// <returns>An array representing the new state of the cube after the specified move has been applied.</returns>
         public static int[] DoMove(int[] cubeState, int move)
         {
             var res = (int[])cubeState.Clone();
@@ -208,7 +255,18 @@ namespace Rubik
             return res;
         }
 
-        // TurnFace rotates a face 3x3 clockwise
+        /// <summary>
+        /// Returns a new cube state with the specified face rotated 90 degrees clockwise.
+        /// </summary>
+        /// <remarks>The method assumes a standard 3x3 cube representation, with each face occupying 9
+        /// consecutive elements in the array. Only the specified face is rotated; the rest of the cube remains
+        /// unchanged.</remarks>
+        /// <param name="cube">An array representing the current state of the cube. The array must contain at least 54 elements, where each
+        /// group of 9 elements corresponds to a face of the cube.</param>
+        /// <param name="face">The zero-based index of the face to rotate. Must be in the range 0 to 5, where each value corresponds to a
+        /// different face of the cube.</param>
+        /// <returns>A new array representing the cube state after rotating the specified face clockwise. The original array is
+        /// not modified.</returns>
         static int[] TurnFace(int[] cube, int face)
         {
             var res = (int[])cube.Clone();
@@ -225,6 +283,19 @@ namespace Rubik
             return res;
         }
 
+        /// <summary>
+        /// Compares two cube state arrays and returns a score indicating the degree of similarity and specific
+        /// conditions met between them.
+        /// </summary>
+        /// <remarks>Both arrays must have a length of 54, corresponding to the standard number of
+        /// stickers on a 3x3 Rubik's Cube. The method does not validate array lengths and may throw an exception if the
+        /// arrays are not of the expected size.</remarks>
+        /// <param name="cube1">An array of 54 integers representing the first cube's state. Each element corresponds to a sticker position
+        /// on the cube.</param>
+        /// <param name="cube2">An array of 54 integers representing the second cube's state. Each element corresponds to a sticker position
+        /// on the cube.</param>
+        /// <returns>An integer score representing the number of positions where the cubes are identical, plus additional points
+        /// for positions in which the second cube's value exceeds 5 and the first cube's value is less than 6.</returns>
         public static int Compare(int[] cube1, int[] cube2)
         {
             int cmp = 0;
@@ -239,6 +310,17 @@ namespace Rubik
             return cmp;
         }
 
+        /// <summary>
+        /// Calculates the entropy value for a given cube state, representing the number of specific matching pairs of
+        /// stickers.
+        /// </summary>
+        /// <remarks>The entropy value can be used as a heuristic to estimate how close the cube is to a
+        /// solved or partially solved state. A higher entropy indicates more matching pairs according to predefined
+        /// relationships between stickers.</remarks>
+        /// <param name="cube">An array of integers representing the current state of the cube. Each element corresponds to a sticker on
+        /// the cube, where the value indicates the sticker's color or identity. The array must have 54
+        /// elements.</param>
+        /// <returns>The number of matching corner-edge and edge-center pairs found in the provided cube state.</returns>
         public static int Entropy(int[] cube)
         {
             int ent = 0;
@@ -297,6 +379,16 @@ namespace Rubik
             return ent;
         }
 
+        /// <summary>
+        /// Evaluates how closely the provided cube state matches the configuration of a 2x2x3 cuboid puzzle.
+        /// </summary>
+        /// <remarks>This method checks specific positions within the cube array to determine alignment
+        /// with a 2x2x3 cuboid structure. It does not validate the overall solvability or legality of the cube
+        /// state.</remarks>
+        /// <param name="cube">An array of integers representing the current state of the cube. Each element corresponds to a sticker or
+        /// position on the cube. The array must be of 54 length.</param>
+        /// <returns>The number of conditions satisfied that indicate the cube matches a 2x2x3 configuration. Higher values
+        /// indicate a closer match. 16 indicates a solved 2x2x3 state.</returns>
         public static int Is2x2x3(int[] cube)
         {
             int ok = 0;
@@ -323,7 +415,14 @@ namespace Rubik
             return ok;
         }
 
-        // Is2gen: faithful translation of the Fortran logic
+        /// <summary>
+        /// Determines whether the given cube state is a member of the 2-generator subgroup based on its edge and corner
+        /// configuration.
+        /// </summary>
+        /// <remarks>This method is typically used in Rubik's Cube solvers or analyzers to check if a cube
+        /// state can be solved using only two face turns. </remarks>
+        /// <param name="cube">An array of integers representing the cube's sticker colors or positions. The array must be of length 54.</param>
+        /// <returns>1 if the cube state belongs to the 2-generator subgroup; otherwise, 0.</returns>
         public static int Is2gen(int[] cube)
         {
             int is2gen = 0;
@@ -392,6 +491,24 @@ namespace Rubik
         }
 
         // FObj: returns int[2] {10*nmax - x, x}
+        /// <summary>
+        /// Evaluates a sequence of moves applied to a cube and returns an array containing a computed score and the
+        /// position of the best move according to the specified evaluation function.
+        /// </summary>
+        /// <remarks>The evaluation function used is determined by the value of typeFunc. The method
+        /// applies each move in movesSequence to a copy of the initial cube state, evaluates the result, and tracks the
+        /// move that yields the highest evaluation. The score calculation and move index are based on this
+        /// maximum.</remarks>
+        /// <param name="cube">The initial state of the cube, represented as an array of integers.</param>
+        /// <param name="cubeSolved">The solved state of the cube, represented as an array of integers. Used for comparison in certain evaluation
+        /// functions.</param>
+        /// <param name="movesSequence">An array of integers representing the sequence of moves to apply to the cube. If null or empty, the method
+        /// returns an array of zeros.</param>
+        /// <param name="typeFunc">An integer specifying the evaluation function to use. Valid values are: 1 (compare to solved state), 2
+        /// (entropy), 3 (2x2x3 check), or 4 (combined 2-gen and 2x2x3 checks).</param>
+        /// <returns>An array of two integers. The first element is the computed score (10 times the maximum evaluation value
+        /// minus the move index), and the second element is the 1-based index of the move where the maximum evaluation
+        /// was achieved. Returns [0, 0] if no moves are provided.</returns>
         public static int[] FObj(int[] cube, int[] cubeSolved, int[] movesSequence, int typeFunc)
         {
             var res = new int[2];
@@ -430,7 +547,18 @@ namespace Rubik
             return res;
         }
 
-        // ClassementPopulation: reorder rows of 2D array descending by val_fobj
+        /// <summary>
+        /// Reorders the rows of a two-dimensional array in descending order based on the corresponding values in a
+        /// specified objective function array.
+        /// </summary>
+        /// <remarks>The returned array contains the same data as the input population array, but with
+        /// rows rearranged so that the individual with the highest objective function value appears first. The lengths
+        /// of the population and objective function arrays must match.</remarks>
+        /// <param name="pop">The two-dimensional array representing the population, where each row corresponds to an individual.</param>
+        /// <param name="valFobj">An array of objective function values, where each element corresponds to the fitness or score of the
+        /// individual in the same row of the population array.</param>
+        /// <returns>A new two-dimensional array with rows reordered so that individuals are sorted in descending order according
+        /// to their objective function values.</returns>
         public static int[,] ClassementPopulation(int[,] pop, int[] valFobj)
         {
             int rows = pop.GetLength(0);
@@ -451,7 +579,23 @@ namespace Rubik
             return outArr;
         }
 
-        // PopMariee: crossover operator (faithful approximation)
+        /// <summary>
+        /// Performs a crossover operation on a population matrix using a faithful approximation algorithm, producing a
+        /// new generation with elite preservation and probabilistic recombination.
+        /// </summary>
+        /// <remarks>The method preserves the elite individual (the first row of the input population) and
+        /// fills the remaining population with offspring generated by crossover or direct copying, based on the
+        /// specified probability. Parent selection is influenced by the selection pressure parameter, allowing for
+        /// adjustable bias toward higher-performing individuals. The input arrays are not modified.</remarks>
+        /// <param name="pop">The current population represented as a two-dimensional array, where each row corresponds to an individual
+        /// and each column to a gene or feature.</param>
+        /// <param name="phi">The selection pressure parameter that influences the probability distribution for parent selection. Must be
+        /// greater than or equal to 1.0.</param>
+        /// <param name="pc">The probability of performing crossover between selected parents. Must be between 0.0 and 1.0, inclusive.</param>
+        /// <param name="perfo">A two-dimensional array representing the performance or fitness of each individual in the population. Used
+        /// to inform selection, but not modified by this method.</param>
+        /// <returns>A new two-dimensional array representing the next generation population after crossover. The first
+        /// individual (elite) is preserved from the input population.</returns>
         public static int[,] PopMariee(int[,] pop, double phi, double pc, int[,] perfo)
         {
             int n = pop.GetLength(0);
@@ -523,7 +667,18 @@ namespace Rubik
             return result;
         }
 
-        // PopMutee: mutation (elite row 0 not mutated)
+        /// <summary>
+        /// Returns a mutated copy of the specified population matrix, applying random mutations to each non-elite
+        /// individual with the given mutation probability.
+        /// </summary>
+        /// <remarks>Mutation is applied independently to each gene of non-elite individuals. For each
+        /// gene selected for mutation, a new random integer value in the range [0, 17] is assigned. The original
+        /// population array is not modified.</remarks>
+        /// <param name="pop">A two-dimensional array representing the population, where each row corresponds to an individual and each
+        /// column to a gene.</param>
+        /// <param name="pm">The probability of mutating each gene. Must be between 0.0 and 1.0, inclusive.</param>
+        /// <returns>A new two-dimensional array containing the mutated population. The first row (elite individual) is preserved
+        /// without mutation.</returns>
         public static int[,] PopMutee(int[,] pop, double pm)
         {
             int n = pop.GetLength(0);
@@ -544,7 +699,17 @@ namespace Rubik
             return res;
         }
 
-        // TrimSequence: reduces redundant or cancelling moves; keeps same array length, fills replaced slots by random moves
+        /// <summary>
+        /// Reduces redundant or cancelling moves in a sequence while preserving the original array length, replacing
+        /// removed moves with random moves as needed.
+        /// </summary>
+        /// <remarks>This method is typically used to simplify move sequences by eliminating pairs of
+        /// moves that cancel each other or can be combined, while ensuring the output array remains the same length as
+        /// the input. The replaced moves are filled with random values, which may affect downstream processing if the
+        /// sequence is expected to be minimal or canonical.</remarks>
+        /// <param name="movesSequence">An array of integers representing a sequence of moves to be trimmed. May be null.</param>
+        /// <returns>A new array of the same length as the input, with redundant or cancelling moves removed and replaced by
+        /// random moves. Returns an empty array if the input is null.</returns>
         public static int[] TrimSequence(int[] movesSequence)
         {
             if (movesSequence == null) return Array.Empty<int>();
@@ -652,6 +817,16 @@ namespace Rubik
             return seq;
         }
 
+        /// <summary>
+        /// Transforms a sequence of move identifiers into their corresponding twisted move representations.
+        /// </summary>
+        /// <remarks>This method is typically used in contexts where move identifiers require
+        /// normalization or transformation to a specific twisted form. The length of the returned array matches the
+        /// input array.</remarks>
+        /// <param name="movesSequence">An array of integers representing the original sequence of move identifiers to be transformed. If null, an
+        /// empty array is returned.</param>
+        /// <returns>An array of integers containing the twisted move representations corresponding to each input move. Returns
+        /// an empty array if <paramref name="movesSequence"/> is null.</returns>
         public static int[] TwistSequence(int[] movesSequence)
         {
             if (movesSequence == null) return Array.Empty<int>();
@@ -668,6 +843,15 @@ namespace Rubik
             return res;
         }
 
+        /// <summary>
+        /// Returns a new array representing the cube state after applying a specific twist transformation to the input
+        /// cube state.
+        /// </summary>
+        /// <remarks>The transformation rearranges the stickers of the cube according to a predefined
+        /// mapping, simulating a particular twist. The input array is not modified.</remarks>
+        /// <param name="c">An array of 54 integers representing the current state of the cube, where each element corresponds to a
+        /// sticker position. The array must have a length of 54.</param>
+        /// <returns>A new array of 54 integers representing the cube state after the twist transformation has been applied.</returns>
         public static int[] TwistCube(int[] c)
         {
             var t = new int[54];
@@ -696,6 +880,16 @@ namespace Rubik
             return t;
         }
 
+       /// <summary>
+       /// Returns a new array representing the cube state after rotating the entire cube clockwise around the vertical
+       /// axis.
+       /// </summary>
+       /// <remarks>This method assumes the input array uses a standard sticker ordering for a 3x3x3 cube.
+       /// The rotation affects all faces as if the entire cube is turned clockwise when viewed from above.</remarks>
+       /// <param name="cu">An array of 54 integers representing the current state of the cube, where each element corresponds to a
+       /// sticker on the cube. The array must have a length of 54.</param>
+       /// <returns>A new array of 54 integers representing the cube state after the rotation. The original array is not
+       /// modified.</returns>
         public static int[] RotateWholeCube(int[] cu)
         {
             var t = new int[54];
@@ -718,6 +912,15 @@ namespace Rubik
             return t;
         }
 
+        /// <summary>
+        /// Rotates the entire cube state around the X-axis (left-right axis) and returns the resulting state.
+        /// </summary>
+        /// <remarks>This method first applies a twist to the cube state, then performs three additional
+        /// whole-cube rotations to achieve the equivalent of an X-axis rotation. The input array is not modified; a new
+        /// array is returned.</remarks>
+        /// <param name="cu">An array representing the current state of the cube. The format and length must match the expected cube
+        /// state representation.</param>
+        /// <returns>An array representing the cube state after rotation around the X-axis.</returns>
         public static int[] RotateWholeCubeX(int[] cu)
         {
             // rotate around LR axis: twist_cube then 3 * rotate_whole_cube
@@ -726,9 +929,18 @@ namespace Rubik
             return res;
         }
 
-        // Solve twogen by exhaustive search (brute-force). This implements an
-        // iterative-deepening DFS limited to moves in the 2-gen group (F and U
-        // generators with their 3 variants: normal, double, inverse).
+        /// <summary>
+        /// Attempts to find a solution to transform a given 2-generator Rubik's Cube state into the solved state using only
+        /// allowed moves (F and U face turns and their variants) via brute-force search.
+        /// </summary>
+        /// <remarks>This method performs an iterative deepening brute-force search to find a sequence of allowed moves
+        /// that solves the cube. The allowed moves are limited to F and U face turns and their variants. The search depth is
+        /// capped to prevent excessive computation time. If a solution is found, it is written to the console and appended to a
+        /// results file. If the cube is already solved, a message is logged. If no solution is found within the maximum depth,
+        /// this is also reported. This method does not return a value; results are communicated via console output and file
+        /// logging.</remarks>
+        /// <param name="cube2gen">An array representing the initial state of the cube, restricted to moves generated by two faces. Cannot be null.</param>
+        /// <param name="cubeSolved">An array representing the target solved state of the cube. Cannot be null.</param>
         public static void SolveTwogenBourrin(int[] cube2gen, int[] cubeSolved)
         {
             if (cube2gen == null || cubeSolved == null) return;

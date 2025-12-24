@@ -54,7 +54,7 @@ namespace Rubik
 
             two_gen = 0;
             twogen_bourrin = 0;
-
+           
             // scramble
             scramble_sequence = new int[37];
 
@@ -367,8 +367,11 @@ namespace Rubik
             perfo = new int[taille_pop, 2];
             perfo_copie = new int[taille_pop, 2];
 
-            if (ExternalFcts.Is2gen(cube_scrambled) == 1) Ttot = 10;
-
+            if (ExternalFcts.Is2gen(cube_scrambled) == 1)
+            {
+                Console.WriteLine("Getting into 2-gen, but cube is already in 2-gen!");
+                Ttot = 10;
+            }
             // génération population initiale
             for (i = 0; i < taille_pop; i++)
                 for (j = 0; j < long_code; j++)
@@ -430,6 +433,8 @@ namespace Rubik
                 if (perfo[0,1] == 1 && ExternalFcts.Is2gen(cube_scrambled) == 1)
                 {
                     Console.WriteLine("Cube was already in the 2-gen group.");
+                    gettingInto2genDone = true;
+                    break;
                 }
 
                 // Fortran checked sum(perfo(1,:)) == 1700 as success condition
