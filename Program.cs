@@ -50,10 +50,10 @@ namespace Rubik
             scramble_type = ParseInt(Console.ReadLine(), 2);
             Console.WriteLine();
             Console.WriteLine("Enter number of generations for 2x2x3 search (e.g. 10000): ");
-            Ttot = ParseInt(Console.ReadLine(), 1000);
+            Ttot = ParseInt(Console.ReadLine(), 10000);
 
             two_gen = 0;
-            twogen_bourrin = 0;
+            twogen_bourrin = 1;
            
             // scramble
             scramble_sequence = new int[37];
@@ -474,9 +474,21 @@ namespace Rubik
             if (twogen_bourrin > 0)
             {
                 Console.WriteLine("calling bourrin");
-                ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved);
+                int bourrinMoves = ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved);
+                if (bourrinMoves <= 0)
+                {
+                    // no solution found or cube already solved: fallback to GA when <= 0 means either no-solution (-1) or already solved (0)
+                    twogen_bourrin = 0;
+                    Console.WriteLine("end of bourrin, fallback to genetic alg for 2-GEN");
+                }
+                else
+                {
+                    // add the number of moves found by bourrin to the total moves
+                    moves_total += bourrinMoves;
+                    Console.WriteLine($"SolveTwogenBourrin solved in {bourrinMoves} moves; total now {moves_total}.");
+                }
             }
-            else
+            if (twogen_bourrin == 0)
             {
                 // Genetic algorithm for solving 2-gen
                 taille_pop = 51;
