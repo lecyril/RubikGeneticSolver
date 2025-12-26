@@ -19,6 +19,7 @@ namespace Rubik
             int[] cube_scrambled = new int[54];
             int[] cube = new int[54];
             int[] cube_scrambled_copy = new int[54];
+            int[] cube_solved_rotated = new int[54]; //for brute-forcng with rotations applied
             string[] scramble_notation;
             string[] sequence_notation;
             string[] sol1 = Array.Empty<string>(), sol2 = Array.Empty<string>(), sol3 = Array.Empty<string>();
@@ -73,6 +74,7 @@ namespace Rubik
                         if (tokens.Length == 0)
                         {
                             // Empty file -> fallback to random
+                            Console.WriteLine("scramble.txt file appears to be empty. Defaulting to random scramble instead.");
                             scramble_type = 2;
                         }
                         else
@@ -88,6 +90,7 @@ namespace Rubik
                     else
                     {
                         // File missing -> fallback to random
+                        Console.WriteLine("Could not find / read scramble.txt. Defaulting to random scramble instead.");
                         scramble_type = 2;
                     }
                 }
@@ -315,9 +318,11 @@ namespace Rubik
             loc2x2x3 = best2x2x3loc[0];
 
             Array.Copy(cube_scrambled_copy, cube_scrambled, 54);
+            Array.Copy(cube_solved, cube_solved_rotated, 54);
             for (ll = 0; ll < loc2x2x3 / 3; ll++)
             {
                 cube_scrambled = ExternalFcts.RotateWholeCube(cube_scrambled);
+                cube_solved_rotated = ExternalFcts.RotateWholeCube(cube_solved_rotated);
                 Console.WriteLine("whole cube clockwise rotation around Oz (= y)");
                 // Écrire dans results.txt comme dans le Fortran original
                 System.IO.File.AppendAllText("results.txt", "y" + Environment.NewLine);
@@ -327,6 +332,7 @@ namespace Rubik
             {
                 case 1:
                     cube_scrambled = ExternalFcts.TwistCube(cube_scrambled);
+                    cube_solved_rotated = ExternalFcts.TwistCube(cube_solved_rotated);
                     Console.WriteLine("whole cube rotation around FUR corner (=xy)");
                     System.IO.File.AppendAllText("results.txt", "xy" + Environment.NewLine);
                     break;
@@ -334,6 +340,7 @@ namespace Rubik
                     for (i = 0; i < 2; i++)
                     {
                         cube_scrambled = ExternalFcts.RotateWholeCubeX(cube_scrambled);
+                        cube_solved_rotated = ExternalFcts.RotateWholeCubeX(cube_solved_rotated);
                         Console.WriteLine("whole cube rotation around LR horizontal axis (=x)");
                         System.IO.File.AppendAllText("results.txt", "x" + Environment.NewLine);
                     }
@@ -345,11 +352,13 @@ namespace Rubik
             for (j = 0; j < long_code; j++) bestEliteSeq[j] = best2x2x3elits[0, j];
             var bestElitePerf = ExternalFcts.FObj(cube_scrambled, cube_solved, bestEliteSeq, 3);
             int eliteSeqLen = bestElitePerf[1];
+            
             if (eliteSeqLen > 0)
             {
                 cube_scrambled = ExternalFcts.DoSequence(cube_scrambled, bestEliteSeq.Take(eliteSeqLen).ToArray());
             }
             moves_total = eliteSeqLen;
+            Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
 
             // Print dans le fichier de résultats : sol1
             sol1 = ExternalFcts.ToNotation(bestEliteSeq.Take(eliteSeqLen).ToArray());
@@ -366,10 +375,13 @@ namespace Rubik
             pop = new int[taille_pop, long_code];
             perfo = new int[taille_pop, 2];
             perfo_copie = new int[taille_pop, 2];
+            bool gettingInto2genDone = false;
 
             if (ExternalFcts.Is2gen(cube_scrambled) == 1)
             {
                 Console.WriteLine("Getting into 2-gen, but cube is already in 2-gen!");
+                gettingInto2genDone = true;
+                Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
                 Ttot = 10;
             }
             // génération population initiale
@@ -377,7 +389,7 @@ namespace Rubik
                 for (j = 0; j < long_code; j++)
                     pop[i, j] = (int)(ExternalFcts.RandomDouble() * 0.9999 * 18);
 
-            bool gettingInto2genDone = false;
+
             while (!gettingInto2genDone)
             {
                 for (generation = 1; generation <= Ttot; generation++)
@@ -430,23 +442,18 @@ namespace Rubik
                 } // end generations
 
                 // After Ttot generations, check result
-                if (perfo[0,1] == 1 && ExternalFcts.Is2gen(cube_scrambled) == 1)
-                {
-                    Console.WriteLine("Cube was already in the 2-gen group.");
-                    gettingInto2genDone = true;
-                    break;
-                }
 
                 // Fortran checked sum(perfo(1,:)) == 1700 as success condition
                 if ((perfo[0,0] + perfo[0,1]) == 1700)
                 {
                     Console.WriteLine("Getting into 2-gen phase is done :)");
                     int seqLen = perfo[0,1];
+                    Console.WriteLine("seqlen : {0}", seqLen);
                     if (seqLen > 0)
                     {
                         var seq = GetRow(pop, 0).Take(seqLen).ToArray();
                         sequence_notation = ExternalFcts.ToNotation(seq);
-                        if (seqLen > 1)
+                        if (seqLen > 0) //why not >0 ?
                         {
                             cube_scrambled = ExternalFcts.DoSequence(cube_scrambled, seq);
                             moves_total += seqLen;
@@ -474,7 +481,8 @@ namespace Rubik
             if (twogen_bourrin > 0)
             {
                 Console.WriteLine("calling bourrin");
-                int bourrinMoves = ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved);
+                Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
+                int bourrinMoves = ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved_rotated);
                 if (bourrinMoves <= 0)
                 {
                     // no solution found or cube already solved: fallback to GA when <= 0 means either no-solution (-1) or already solved (0)
@@ -490,6 +498,7 @@ namespace Rubik
             }
             if (twogen_bourrin == 0)
             {
+                Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
                 // Genetic algorithm for solving 2-gen
                 taille_pop = 51;
                 nbre_intrus = 5;
