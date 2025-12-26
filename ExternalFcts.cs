@@ -994,7 +994,7 @@ namespace Rubik
             {
                 var solution = currentSeq.Take(foundDepth).ToArray();
                 var notation = ToNotation(solution);
-                Console.WriteLine("youpie ! (bourrin) solution found");
+                Console.WriteLine("Yay! (bourrin) solution found");
                 Console.WriteLine(string.Join("", notation));
                 try
                 {

@@ -222,6 +222,12 @@ namespace Rubik
                             int[] row = new int[long_code];
                             for (j = 0; j < long_code; j++) row[j] = pop[i, j];
                             var perf = ExternalFcts.FObj(cube_scrambled, cube_solved, row, 3);
+                            //bonus if already in 2-gen subgroup (unlikely but nice if it happens)
+                            /*if (ExternalFcts.Is2gen(ExternalFcts.DoSequence(cube_scrambled, row.Take(perf[1]).ToArray())) > 0)
+                            {
+                                Console.WriteLine("Wow, this 2x2x3 is even already solvable in 2-GEN!");
+                                perf[0] = 1000; // bonus for being in 2-gen already
+                            }*/
                             perfo[i, 0] = perf[0];
                             perfo[i, 1] = perf[1];
                         }
@@ -261,10 +267,15 @@ namespace Rubik
                     Console.WriteLine("optimal :");
                     var seqLen = perfo[0, 1];
                     sequence_notation = ExternalFcts.ToNotation(GetRow(pop, 0).Take(seqLen).ToArray());
+                    if(ExternalFcts.Is2gen(ExternalFcts.DoSequence(cube_scrambled, GetRow(pop, 0).Take(seqLen).ToArray())) >0)
+                        {
+                        Console.WriteLine("Wow, this 2x2x3 is even already solvable in 2-GEN!");
+                        perfo[0,0] += 1000; // bonus for being in 2-gen already
+                    }
                     Console.WriteLine(string.Join("", sequence_notation));
                     Console.WriteLine("perfo, # moves, entropy");
                     Console.WriteLine($"{perfo[0,0]} {perfo[0,1]} {(perfo[0,0] + perfo[0,1]) / 10.0}");
-                    if ((perfo[0,0] + perfo[0,1]) / 10.0 == 16.0) Console.WriteLine("This 2x2x3 was solved :)");
+                    if ((perfo[0,0] + perfo[0,1]) / 10.0 >= 16.0) Console.WriteLine("This 2x2x3 was solved :)");
                     Console.WriteLine();
 
                     best2x2x3loc[loc2x2x3] = loc2x2x3;
@@ -478,7 +489,7 @@ namespace Rubik
             {
                 Console.WriteLine("calling bourrin");
                 int bourrinMoves = ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved_rotated);
-                if (bourrinMoves <= 0)
+                if (bourrinMoves < 0)
                 {
                     // no solution found or cube already solved: fallback to GA when <= 0 means either no-solution (-1) or already solved (0)
                     twogen_bourrin = 0;
