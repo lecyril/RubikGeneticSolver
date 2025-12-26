@@ -312,7 +312,6 @@ namespace Rubik
             Console.WriteLine("End of the 2x2x3 search.");
             Console.WriteLine("Alg will now try to go into 2-gen for the best location.");
             Console.WriteLine("Location searched : " + best2x2x3loc[0]);
-            Console.WriteLine();
 
             // On réinitialise cube_scrambled avec scramble, puis setup-rotations, puis best 2x2x3 solution
             loc2x2x3 = best2x2x3loc[0];
@@ -358,7 +357,7 @@ namespace Rubik
                 cube_scrambled = ExternalFcts.DoSequence(cube_scrambled, bestEliteSeq.Take(eliteSeqLen).ToArray());
             }
             moves_total = eliteSeqLen;
-            Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
+            Console.WriteLine("2x2x3 optimal : {0} moves",eliteSeqLen);
 
             // Print dans le fichier de résultats : sol1
             sol1 = ExternalFcts.ToNotation(bestEliteSeq.Take(eliteSeqLen).ToArray());
@@ -381,7 +380,6 @@ namespace Rubik
             {
                 Console.WriteLine("Getting into 2-gen, but cube is already in 2-gen!");
                 gettingInto2genDone = true;
-                Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
                 Ttot = 10;
             }
             // génération population initiale
@@ -448,20 +446,18 @@ namespace Rubik
                 {
                     Console.WriteLine("Getting into 2-gen phase is done :)");
                     int seqLen = perfo[0,1];
-                    Console.WriteLine("seqlen : {0}", seqLen);
                     if (seqLen > 0)
                     {
                         var seq = GetRow(pop, 0).Take(seqLen).ToArray();
                         sequence_notation = ExternalFcts.ToNotation(seq);
-                        if (seqLen > 0) //why not >0 ?
+                        if (seqLen > 0) //was >1, why not >0 ?
                         {
                             cube_scrambled = ExternalFcts.DoSequence(cube_scrambled, seq);
                             moves_total += seqLen;
                             Console.WriteLine("optimal :");
                             Console.WriteLine(string.Join("", sequence_notation));
-                            Console.WriteLine("# moves");
-                            Console.WriteLine(seqLen);
-                        }
+                            Console.WriteLine("# moves : {0}", seqLen);
+                                                    }
                         sol2 = sequence_notation;
                         // Écrire sol2 dans results.txt — les rotations ont déjà été écrites plus haut,
                         // ce qui rend la sortie fidèle au Fortran.
@@ -481,7 +477,6 @@ namespace Rubik
             if (twogen_bourrin > 0)
             {
                 Console.WriteLine("calling bourrin");
-                Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
                 int bourrinMoves = ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved_rotated);
                 if (bourrinMoves <= 0)
                 {
@@ -498,7 +493,6 @@ namespace Rubik
             }
             if (twogen_bourrin == 0)
             {
-                Console.WriteLine($"{cube_scrambled[0]}, {cube_scrambled[5]}, {cube_scrambled[10]}, {cube_scrambled[15]},{cube_scrambled[20]}, {cube_scrambled[25]}");
                 // Genetic algorithm for solving 2-gen
                 taille_pop = 51;
                 nbre_intrus = 5;
