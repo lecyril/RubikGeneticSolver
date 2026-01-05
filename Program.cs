@@ -491,7 +491,7 @@ namespace Rubik
                 int bourrinMoves = ExternalFcts.SolveTwogenBourrin(cube_scrambled, cube_solved_rotated);
                 if (bourrinMoves < 0)
                 {
-                    // no solution found or cube already solved: fallback to GA when <= 0 means either no-solution (-1) or already solved (0)
+                    // no solution found or cube already solved: fallback to GA when < 0 means no-solution (-1)
                     twogen_bourrin = 0;
                     Console.WriteLine("end of bourrin, fallback to genetic alg for 2-GEN");
                 }
