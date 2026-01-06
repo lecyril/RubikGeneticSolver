@@ -129,7 +129,18 @@ namespace Rubik
             scramble_notation = ExternalFcts.ToNotation(scramble_sequence);
             Console.WriteLine(string.Join("", scramble_notation));
 
-            // Ecriture du scramble dans un fichier results.txt (overwrite)
+            // Write scramble and solution in results.txt
+            // Checks if results.txt exists from previous run: if yes, move its content to 
+            // the first non-existing results[j].txt file.
+            if (System.IO.File.Exists("results.txt"))
+            {
+                int resultFileIndex = 1;
+                while (System.IO.File.Exists($"results{resultFileIndex}.txt"))
+                {
+                    resultFileIndex++;
+                }
+                System.IO.File.Move("results.txt", $"results{resultFileIndex}.txt");
+            }
             System.IO.File.WriteAllText("results.txt", string.Join("", scramble_notation) + "//Scramble"+ Environment.NewLine);
 
             cube_scrambled = ExternalFcts.DoSequence(cube_solved, scramble_sequence);
@@ -221,13 +232,9 @@ namespace Rubik
                         {
                             int[] row = new int[long_code];
                             for (j = 0; j < long_code; j++) row[j] = pop[i, j];
-                            var perf = ExternalFcts.FObj(cube_scrambled, cube_solved, row, 3);
-                            //bonus if already in 2-gen subgroup (unlikely but nice if it happens)
-                            /*if (ExternalFcts.Is2gen(ExternalFcts.DoSequence(cube_scrambled, row.Take(perf[1]).ToArray())) > 0)
-                            {
-                                Console.WriteLine("Wow, this 2x2x3 is even already solvable in 2-GEN!");
-                                perf[0] = 1000; // bonus for being in 2-gen already
-                            }*/
+                            //var perf = ExternalFcts.FObj(cube_scrambled, cube_solved, row, 3);
+                            //Bonus if already in 2-gen ? To check...
+                            var perf = ExternalFcts.FObj(cube_scrambled, cube_solved, row, 4);
                             perfo[i, 0] = perf[0];
                             perfo[i, 1] = perf[1];
                         }
@@ -270,7 +277,7 @@ namespace Rubik
                     if(ExternalFcts.Is2gen(ExternalFcts.DoSequence(cube_scrambled, GetRow(pop, 0).Take(seqLen).ToArray())) >0)
                         {
                         Console.WriteLine("Wow, this 2x2x3 is even already solvable in 2-GEN!");
-                        perfo[0,0] += 1000; // bonus for being in 2-gen already
+                        //perfo[0,0] += 1000; // bonus for being in 2-gen already
                     }
                     Console.WriteLine(string.Join("", sequence_notation));
                     Console.WriteLine("perfo, # moves, entropy");
@@ -452,8 +459,8 @@ namespace Rubik
 
                 // After Ttot generations, check result
 
-                // Fortran checked sum(perfo(1,:)) == 1700 as success condition
-                if ((perfo[0,0] + perfo[0,1]) == 1700)
+                // Fortran checked sum(perfo(1,:)) == 170 as success condition
+                if ((perfo[0,0] + perfo[0,1]) == 170)
                 {
                     Console.WriteLine("Getting into 2-gen phase is done :)");
                     int seqLen = perfo[0,1];

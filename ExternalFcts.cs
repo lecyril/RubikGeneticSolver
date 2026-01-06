@@ -531,7 +531,7 @@ namespace Rubik
                     1 => Compare(cubeTemp, cubeSolved),
                     2 => Entropy(cubeTemp),
                     3 => Is2x2x3(cubeTemp),
-                    4 => 10 * Is2gen(cubeTemp) + 10 * Is2x2x3(cubeTemp),
+                    4 => Is2gen(cubeTemp) + Is2x2x3(cubeTemp),
                     _ => 0
                 };
 
