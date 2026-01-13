@@ -233,7 +233,7 @@ namespace Rubik
                             int[] row = new int[long_code];
                             for (j = 0; j < long_code; j++) row[j] = pop[i, j];
                             //var perf = ExternalFcts.FObj(cube_scrambled, cube_solved, row, 3);
-                            //Bonus if already in 2-gen ? To check...
+                            //Bonus if already in 2-gen (FObj type 4)
                             var perf = ExternalFcts.FObj(cube_scrambled, cube_solved, row, 4);
                             perfo[i, 0] = perf[0];
                             perfo[i, 1] = perf[1];
@@ -276,8 +276,7 @@ namespace Rubik
                     sequence_notation = ExternalFcts.ToNotation(GetRow(pop, 0).Take(seqLen).ToArray());
                     if(ExternalFcts.Is2gen(ExternalFcts.DoSequence(cube_scrambled, GetRow(pop, 0).Take(seqLen).ToArray())) >0)
                         {
-                        Console.WriteLine("Wow, this 2x2x3 is even already solvable in 2-GEN!");
-                        //perfo[0,0] += 1000; // bonus for being in 2-gen already
+                        Console.WriteLine("Wow, this 2x2x3 is even already solvable in 2-GEN!");    
                     }
                     Console.WriteLine(string.Join("", sequence_notation));
                     Console.WriteLine("perfo, # moves, entropy");
@@ -364,10 +363,10 @@ namespace Rubik
                     break;
             }
 
-            // appliquer la meilleure élite trouvée pour cette location
+            // appliquer la meilleure élite trouvée pour cette location (avec bonus si 2-gen solvable -> FObj(,,,4)
             int[] bestEliteSeq = new int[long_code];
             for (j = 0; j < long_code; j++) bestEliteSeq[j] = best2x2x3elits[0, j];
-            var bestElitePerf = ExternalFcts.FObj(cube_scrambled, cube_solved, bestEliteSeq, 3);
+            var bestElitePerf = ExternalFcts.FObj(cube_scrambled, cube_solved, bestEliteSeq, 4);
             int eliteSeqLen = bestElitePerf[1];
             
             if (eliteSeqLen > 0)
@@ -459,7 +458,7 @@ namespace Rubik
 
                 // After Ttot generations, check result
 
-                // Fortran checked sum(perfo(1,:)) == 170 as success condition
+                // 170 as success condition: 160 from entropy + 10 from being in 2-gen
                 if ((perfo[0,0] + perfo[0,1]) == 170)
                 {
                     Console.WriteLine("Getting into 2-gen phase is done :)");
@@ -468,7 +467,7 @@ namespace Rubik
                     {
                         var seq = GetRow(pop, 0).Take(seqLen).ToArray();
                         sequence_notation = ExternalFcts.ToNotation(seq);
-                        if (seqLen > 0) //was >1, why not >0 ?
+                        if (seqLen > 0) //non-empty sequence
                         {
                             cube_scrambled = ExternalFcts.DoSequence(cube_scrambled, seq);
                             moves_total += seqLen;

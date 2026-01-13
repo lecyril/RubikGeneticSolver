@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
-    <AssemblyName>RubikSolver</AssemblyName>
+    <AssemblyName>RubikGeneticSolver</AssemblyName>
   </PropertyGroup>
 
 </Project>
